@@ -100,12 +100,8 @@ public class App extends JFrame implements ActionListener
         File imageFile = new File(inputImagePath);
         File compressedImageFile = new File(outputImagePath);
 
-        InputStream is = new FileInputStream(imageFile);
-        OutputStream os = new FileOutputStream(compressedImageFile);
-
-
         // create a BufferedImage as the result of decoding the supplied InputStream
-        BufferedImage image = ImageIO.read(is);
+        BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
 
         // get all image writers for JPG format
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
@@ -114,7 +110,7 @@ public class App extends JFrame implements ActionListener
             throw new IllegalStateException("No writers found");
 
         ImageWriter writer = (ImageWriter) writers.next();
-        ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+        ImageOutputStream ios = ImageIO.createImageOutputStream(new FileOutputStream(compressedImageFile));
         writer.setOutput(ios);
 
         ImageWriteParam param = writer.getDefaultWriteParam();
@@ -128,8 +124,6 @@ public class App extends JFrame implements ActionListener
         writer.write(null, new IIOImage(image, null, null), param);
 
         // close all streams
-        is.close();
-        os.close();
         ios.close();
         writer.dispose();
     }
@@ -208,21 +202,39 @@ public class App extends JFrame implements ActionListener
         }
         else if(s.equals("Save"))
         {
-            StringTokenizer st = new StringTokenizer(path,".");
+            if(!pathTF.getText().equals(""))
             try {
+                StringTokenizer st = new StringTokenizer(path,".");
                 if(flag==1)
                 {
                     resize(path,st.nextToken()+"_Compressed.jpg" , (float)qualitySlider.getValue()/100);
                     deleteTemp("temp.jpg", "temp2.jpg");
+                    JOptionPane.showMessageDialog(this,
+                            "Saved Image",
+                            "Saved",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
                 else
                 {
                     resize(path,st.nextToken()+"_Compressed.jpg", Integer.parseInt(widthTF.getText()), Integer.parseInt(heightTF.getText()));
                     deleteTemp("temp.jpg", " ");
+                    JOptionPane.showMessageDialog(this,
+                            "Saved Image",
+                            "Saved",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
-            } catch (IOException e1) {
+            }
+            catch (IOException e1) {
                 e1.printStackTrace();
             }
+            if(pathTF.getText().equals(""))
+            {
+                JOptionPane.showMessageDialog(this,
+                        "Select an image Before saving.",
+                        "Select an image",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+
             flag=0;
         }
     }
