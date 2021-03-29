@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.DirectoryNotEmptyException;
@@ -33,15 +35,43 @@ public class App extends JFrame implements ActionListener
 
     static String path;
     static int widthval,heightval,flag=0;
+    static float ratio=1f;
 
     public App()
     {
         add(rootPanel);
         setSize(600,500);
+        maintainAspectRatioCheckBox.setSelected(true);
         selectImageButton.addActionListener(this);
         checkSizeButton.addActionListener(this);
         saveButton.addActionListener(this);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        widthTF.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(!widthTF.getText().equals("") && maintainAspectRatioCheckBox.isSelected()) {
+                    JTextField textField = (JTextField) e.getSource();
+                    String text = textField.getText();
+                    float width = Float.parseFloat(text);
+                    float height = width / ratio;
+                    heightTF.setText(String.valueOf((int)height));
+                }
+            }
+        });
+
+        heightTF.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(!widthTF.getText().equals("") && maintainAspectRatioCheckBox.isSelected()) {
+                    JTextField textField = (JTextField) e.getSource();
+                    String text = textField.getText();
+                    float height = Float.parseFloat(text);
+                    float width = height * ratio;
+                    widthTF.setText(String.valueOf((int)width));
+                }
+            }
+        });
     }
 
     public static void resize(String inputImagePath,String outputImagePath, int scaledWidth, int scaledHeight) throws IOException
@@ -145,6 +175,7 @@ public class App extends JFrame implements ActionListener
                     BufferedImage img= ImageIO.read(inputFile);
                     widthval= img.getWidth();
                     heightval= img.getHeight();
+                    ratio=(float)widthval/heightval;
                     widthTF.setText(String.valueOf(widthval));
                     heightTF.setText(String.valueOf(heightval));
                     currentSizeTF.setText((float) inputFile.length() / 1024 + "  kb");
