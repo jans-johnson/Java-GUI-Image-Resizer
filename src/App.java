@@ -92,6 +92,7 @@ public class App extends JFrame implements ActionListener
         checkSizeButton.addActionListener(this);
         saveButton.addActionListener(this);
         addButton.addActionListener(this);
+        editButton.addActionListener(this);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         File directory = new File("settings/options.txt");
@@ -352,6 +353,15 @@ public class App extends JFrame implements ActionListener
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
+            }
+        }
+        else if (s.equals("Edit"))
+        {
+            ProcessBuilder pb = new ProcessBuilder("Notepad.exe", "settings/options.txt");
+            try {
+                pb.start();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
         }
     }
