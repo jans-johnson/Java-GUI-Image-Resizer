@@ -4,6 +4,8 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,20 +34,76 @@ public class App extends JFrame implements ActionListener
     private JPanel rootPanel;
     private JTabbedPane tabbedPane1;
     private JCheckBox maintainAspectRatioCheckBox;
+    private JButton addButton;
+    private JButton editButton;
 
     static String path;
     static int widthval,heightval,flag=0;
     static float ratio=1f;
 
+    static DefaultListModel listModel;
+
     public App()
     {
+        listModel = new DefaultListModel();
+        preferenceList.setModel(listModel);
+        preferenceList.addListSelectionListener(new ListSelectionListener() {
+
+        @Override
+        public void valueChanged(ListSelectionEvent arg0) {
+            if (!arg0.getValueIsAdjusting()) {
+                try {
+                    JList source = (JList) arg0.getSource();
+                    String selected = source.getSelectedValue().toString();
+                    File fin = new File("settings/options.txt");
+                    FileReader fr = new FileReader(fin);
+                    BufferedReader br = new BufferedReader(fr);
+                    String line;
+                    String id,width,height;
+                    while ((line = br.readLine()) != null) {
+                        StringTokenizer tk = new StringTokenizer(line, "|");
+                        StringTokenizer tk2 = new StringTokenizer(tk.nextToken(), ":");
+                        id = tk2.nextToken();
+                        id = tk2.nextToken();
+                        if(id.equals(selected))
+                        {
+                            tk2 = new StringTokenizer(tk.nextToken(), ":");
+                            width=tk2.nextToken();
+                            width=tk2.nextToken();
+                            widthTF.setText(width);
+                            tk2 = new StringTokenizer(tk.nextToken(), ":");
+                            height=tk2.nextToken();
+                            height=tk2.nextToken();
+                            heightTF.setText(height);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+        }
+    });
         add(rootPanel);
         setSize(600,500);
         maintainAspectRatioCheckBox.setSelected(true);
         selectImageButton.addActionListener(this);
         checkSizeButton.addActionListener(this);
         saveButton.addActionListener(this);
+        addButton.addActionListener(this);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        File directory = new File("settings/options.txt");
+        if (directory.exists()) {
+            try {
+                setList();
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
 
         widthTF.addKeyListener(new KeyAdapter() {
             @Override
@@ -72,6 +130,43 @@ public class App extends JFrame implements ActionListener
                 }
             }
         });
+    }
+
+    public static void addToOptions(String ID,String width, String height) throws IOException
+    {
+        File fout = new File("settings/options.txt");
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(fout, true);
+        }
+        catch (FileNotFoundException e)
+        {
+            Files.createDirectories(Paths.get("settings"));
+            fos = new FileOutputStream(fout, true);
+        }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        bw.write("Id:"+ID+"|width:"+width+"|height:"+height);
+        listModel.addElement(ID);
+        bw.newLine();
+        bw.close();
+    }
+
+    public static void setList() throws IOException {
+        File fin = new File("settings/options.txt");
+        FileReader fr=new FileReader(fin);
+        BufferedReader br=new BufferedReader(fr);
+        String line;
+        String id;
+        int i=0;
+        while((line=br.readLine())!=null)
+        {
+            StringTokenizer tk=new StringTokenizer(line,"|");
+            StringTokenizer tk2=new StringTokenizer(tk.nextToken(),":");
+            id=tk2.nextToken();
+            id=tk2.nextToken();
+            listModel.add(i,id);
+            i++;
+        }
     }
 
     public static void resize(String inputImagePath,String outputImagePath, int scaledWidth, int scaledHeight) throws IOException
@@ -236,6 +331,28 @@ public class App extends JFrame implements ActionListener
             }
 
             flag=0;
+        }
+        else if(s.equals("Add"))
+        {
+            JTextField field1 = new JTextField();
+            JTextField field2 = new JTextField();
+            JTextField id=new JTextField();
+            JPanel panel = new JPanel(new GridLayout(0, 1));
+            panel.add(new JLabel("ID :"));
+            panel.add(id);
+            panel.add(new JLabel("Width :"));
+            panel.add(field1);
+            panel.add(new JLabel("Height :"));
+            panel.add(field2);
+            int result = JOptionPane.showConfirmDialog(null, panel, "Add Option",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    addToOptions(id.getText(),field1.getText(),field2.getText());
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            }
         }
     }
 }
