@@ -169,7 +169,7 @@ public class App extends JFrame implements ActionListener
         }
     }
 
-    public static void resize(String source, String outputImagePath, int width, int height) throws IOException {
+    public static void resize(String source, String outputImagePath, int width, int height,float quality) throws IOException {
         File dest=new File(outputImagePath);
         BufferedImage sourceImage = ImageIO.read(new FileInputStream(source));
         double ratio = (double) sourceImage.getWidth()/sourceImage.getHeight();
@@ -184,7 +184,7 @@ public class App extends JFrame implements ActionListener
         Graphics2D g2d = bufferedScaled.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2d.drawImage(scaled, 0, 0, width, height, null);
-        writeJpeg(bufferedScaled, dest.getCanonicalPath(), 1.0f);
+        writeJpeg(bufferedScaled, dest.getCanonicalPath(), quality);
     }
 
     private static void writeJpeg(BufferedImage image, String destFile, float quality)
@@ -192,7 +192,7 @@ public class App extends JFrame implements ActionListener
         ImageWriter writer = null;
         FileImageOutputStream output = null;
         try {
-            writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+            writer = ImageIO.getImageWritersByFormatName("jpg").next();
             ImageWriteParam param = writer.getDefaultWriteParam();
             param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionQuality(quality);
@@ -212,20 +212,10 @@ public class App extends JFrame implements ActionListener
         }
     }
 
-
-    public static void resize(String inputImagePath,String outputImagePath, float quality) throws IOException
-    {
-        File imageFile = new File(inputImagePath);
-        BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
-        writeJpeg(image,outputImagePath,quality);
-    }
-
-    public static void deleteTemp(String f1,String f2)
+    public static void deleteTemp(String f1)
     {
         try
         {
-            if(!f2.equals(" "))
-                Files.deleteIfExists(Paths.get(f2));
             Files.deleteIfExists(Paths.get(f1));
         }
         catch(NoSuchFileException e)
@@ -271,43 +261,24 @@ public class App extends JFrame implements ActionListener
                 break;
             case "Check Size":
                 try {
-                    resize(path, "temp.jpg", Integer.parseInt(widthTF.getText()), Integer.parseInt(heightTF.getText()));
+                    resize(path, "temp.jpg", Integer.parseInt(widthTF.getText()), Integer.parseInt(heightTF.getText()),(float) qualitySlider.getValue() / 100);
                     File inputFile = new File("temp.jpg");
                     currentSizeTF.setText((float) inputFile.length() / 1024 + "  kb");
+                    deleteTemp("temp.jpg");
                 } catch (NumberFormatException | IOException e1) {
                     e1.printStackTrace();
-                }
-                if (qualitySlider.getValue() != 100) {
-                    flag = 1;
-                    try {
-                        resize("temp.jpg", "temp2.jpg", (float) qualitySlider.getValue() / 100);
-                        File inputFile = new File("temp2.jpg");
-                        currentSizeTF.setText((float) inputFile.length() / 1024 + "  kb");
-
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
                 }
                 break;
             case "Save":
                 if (!pathTF.getText().equals(""))
                     try {
                         StringTokenizer st = new StringTokenizer(path, ".");
-                        if (flag == 1) {
-                            resize(path, st.nextToken() + "_Compressed.jpg", (float) qualitySlider.getValue() / 100);
-                            deleteTemp("temp.jpg", "temp2.jpg");
-                            JOptionPane.showMessageDialog(this,
-                                    "Saved Image",
-                                    "Saved",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            resize(path, st.nextToken() + "_Compressed.jpg", Integer.parseInt(widthTF.getText()), Integer.parseInt(heightTF.getText()));
-                            deleteTemp("temp.jpg", " ");
-                            JOptionPane.showMessageDialog(this,
-                                    "Saved Image",
-                                    "Saved",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        }
+                        resize(path, st.nextToken() + "_Compressed.jpg", Integer.parseInt(widthTF.getText()), Integer.parseInt(heightTF.getText()),(float) qualitySlider.getValue() / 100);
+                        JOptionPane.showMessageDialog(this,
+                                "Saved Image",
+                                "Saved",
+                                JOptionPane.INFORMATION_MESSAGE);
+
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -318,7 +289,6 @@ public class App extends JFrame implements ActionListener
                             JOptionPane.WARNING_MESSAGE);
                 }
 
-                flag = 0;
                 break;
             case "Add":
                 JTextField field1 = new JTextField();
