@@ -27,7 +27,7 @@ public class App extends JFrame implements ActionListener
     private JTextField widthTF;
     private JTextField heightTF;
     private JSlider qualitySlider;
-    private JList preferenceList;
+    private JList<String> preferenceList;
     private JButton checkSizeButton;
     private JButton saveButton;
     private JPanel rootPanel;
@@ -37,14 +37,14 @@ public class App extends JFrame implements ActionListener
     private JButton editButton;
 
     static String path;
-    static int widthval,heightval,flag=0;
+    static int widthval,heightval;
     static float ratio=1f;
 
-    static DefaultListModel listModel;
+    static DefaultListModel<String> listModel;
 
     public App()
     {
-        listModel = new DefaultListModel();
+        listModel = new DefaultListModel<>();
         preferenceList.setModel(listModel);
         preferenceList.addListSelectionListener(new ListSelectionListener() {
 
@@ -77,7 +77,7 @@ public class App extends JFrame implements ActionListener
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ignored)
                 {
 
                 }
@@ -99,7 +99,7 @@ public class App extends JFrame implements ActionListener
             try {
                 setList();
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
 
             }
@@ -200,8 +200,6 @@ public class App extends JFrame implements ActionListener
             writer.setOutput(output);
             IIOImage iioImage = new IIOImage(image, null, null);
             writer.write(null, iioImage, param);
-        } catch (IOException ex) {
-            throw ex;
         } finally {
             if (writer != null) {
                 writer.dispose();

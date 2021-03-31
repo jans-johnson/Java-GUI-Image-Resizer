@@ -6,5 +6,6 @@ public class main
     {
         App app=new App();
         app.setVisible(true);
+        app.setTitle("Image Resizer");
     }
 }

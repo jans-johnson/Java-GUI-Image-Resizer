@@ -1,0 +1,2 @@
+Id:PSC Photograph|width:150|height:200
+Id:PSC Signature|width:150|height:100
